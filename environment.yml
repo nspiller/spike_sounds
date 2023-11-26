@@ -1,0 +1,12 @@
+name: midi
+channels:
+  - conda-forge
+dependencies:
+  - scipy
+  - ipykernel
+  - jupytext
+  - matplotlib
+  - ca-certificates
+  - openssl
+  - pip:
+      - mido==1.3.0
