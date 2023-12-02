@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - scipy
+  - imageio-ffmpeg
   - ipykernel
   - jupytext
   - matplotlib

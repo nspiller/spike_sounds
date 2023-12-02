@@ -18,7 +18,7 @@
 # %load_ext autoreload
 # %autoreload 2
 
-from src import data_handling, midi_handling, plotting
+from src import data_handling, midi_handling, visualize
 
 # %% [markdown]
 # # load and visualize data
@@ -36,7 +36,7 @@ from src import data_handling, midi_handling, plotting
 data = data_handling.read_data('../data/example.pickle')
 
 # plot
-plotting.plot_data(data, vline_keys=['lick', 'onset'])
+visualize.plot_data(data, vline_keys=['lick', 'onset'])
 
 # %%
 # convert dictionary to list of lists of time events (order is reflected in MIDI file)
@@ -53,7 +53,7 @@ midi_handling.times2midi(
     l_time_events,                      # actual data
     bpm=120, ticks_per_beat=4800,       # time resolution settings
     note_duration=0.1,                  # in seconds
-    root_note=60,                       # 60 is C4
+    root_note=36,                       # 60 is C4
     semitone_sequence=[0, 4, 7],        # 0-4-7 is a major chord, octaves (+12) are added automatically
                                         # note: max note is 127
     merge_tracks=True,                  # merge if you want to use multiple instruments
@@ -62,3 +62,8 @@ midi_handling.times2midi(
 
 # %% [markdown]
 # # create video file
+
+# %%
+visualize.generate_movie(l_time_events, time_interval=(0, 20), time_resolution=.03, path_movie='../data/example.mp4')
+
+# %%

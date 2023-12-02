@@ -9,6 +9,17 @@ pip install -e .
 # Usage
 Run `scripts/write_midi.py` (optional: convert to jupyter notebook with jupytext)
 
+# movie creation
+
+Convert MIDI to wav:
+
+https://www.zamzar.com/
+(https://signal.vercel.app drops events)
+
+Combine video and audio track
+```
+ffmpeg -i example.mp4 -i example.wav -c:v copy -c:a aac combined.mp4
+```
 
 # Convert spike times to MIDI
 This project is deisgned to convert spikes recorded in
