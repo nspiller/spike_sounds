@@ -27,8 +27,8 @@ from src import data_handling, midi_handling, visualize
 # # optional: load data from matlab file
 # data = data_handling.load_matlab(
 #     '../data/matlab/SM117_20220803_g0_JRC_units_probe1_continous.mat',
-#     rate_range=(1, 100),
-#     time_interval=(500, 520))
+#     rate_range=(0, None),
+#     time_interval=(3555.7 - 1, 3566.2 + 7 ))
 # data_handling.write_data(data, '../data/example.pickle')
 
 # %%
@@ -36,7 +36,12 @@ from src import data_handling, midi_handling, visualize
 data = data_handling.read_data('../data/example.pickle')
 
 # plot
-visualize.plot_data(data, vline_keys=['lick', 'onset'])
+plot_params = {
+    'figsize' : (10, 5),
+    'linewidth' : .5,
+    'linelengths' : .9,
+}
+visualize.plot_data(data, vline_keys=['lick', 'onset'], **plot_params)
 
 # %%
 # convert dictionary to list of lists of time events (order is reflected in MIDI file)
@@ -64,6 +69,6 @@ midi_handling.times2midi(
 # # create video file
 
 # %%
-visualize.generate_movie(l_time_events, time_interval=(0, 20), time_resolution=.03, path_movie='../data/example.mp4')
+visualize.generate_movie(l_time_events, time_interval=(0, 20), time_resolution=.03, plot_params=plot_params, path_movie='../data/example.mp4')
 
 # %%

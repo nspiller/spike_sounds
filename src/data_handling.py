@@ -14,11 +14,13 @@ def read_data(path):
     return dictionary
 
 
-def load_matlab(p_mat, time_interval=(0, 10), rate_range=(0, 500)):
+def load_matlab(p_mat, time_interval=(0, 10), rate_range=(0, None)):
     # unpack thresholds
     t_min, t_max = time_interval
     dt = t_max - t_min  # duration
     r_min, r_max = rate_range
+    if r_max is None:
+        r_max = np.inf
     n_min, n_max = r_min * dt, r_max * dt  # number of spikes
 
     # initialize data dict

@@ -3,10 +3,10 @@ import numpy as np
 import io
 import imageio
 
-def plot_data(data, vline_keys=[], save_path=''):
+def plot_data(data, vline_keys=[], linewidth=.5, linelengths=1, figsize=(10, 5), save_path=''):
 
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=figsize)
 
     lineoffset = 0
     vline_color_id = 1
@@ -18,7 +18,7 @@ def plot_data(data, vline_keys=[], save_path=''):
             vline_color_id += 1
 
         else:
-            ax.eventplot(time_events, lineoffsets=lineoffset, color='C0')
+            ax.eventplot(time_events, lineoffsets=lineoffset, linewidth=linewidth, linelengths=linelengths, color='C0')
             lineoffset += 1
 
     # legend
@@ -37,14 +37,14 @@ def plot_data(data, vline_keys=[], save_path=''):
 
 
 
-def plot_frame(l_time_events, time_interval, time_point):
+def plot_frame(l_time_events, time_interval, time_point, linewidth=.5, linelengths=1, figsize=(10, 5),):
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=figsize)
 
     for i, time_events in enumerate(l_time_events):
 
         mask = time_events < time_point
-        ax.eventplot(time_events[mask], lineoffsets=i, colors=f'C{i}')
+        ax.eventplot(time_events[mask], lineoffsets=i, linewidth=linewidth, linelengths=linelengths, colors=f'C{i}')
     
     ax.axvline(time_point, color='gray')
 
@@ -68,13 +68,13 @@ def convert_figure_to_image(fig):
     return frame
  
     
-def generate_movie(l_time_events, time_interval, time_resolution, path_movie):
+def generate_movie(l_time_events, time_interval, time_resolution, plot_params, path_movie):
 
     time_points = np.arange(*time_interval, time_resolution)
 
     frames = []
     for time_point in time_points:
-        fig = plot_frame(l_time_events, time_interval, time_point)
+        fig = plot_frame(l_time_events, time_interval, time_point, **plot_params)
         frames.append(convert_figure_to_image(fig))
         plt.close(fig)
 
