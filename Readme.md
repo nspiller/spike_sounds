@@ -2,12 +2,15 @@
 
 # Installation
 ```
+git clone https://github.com/nspiller/spike_sounds
+cd spike_sounds
 conda create -n midi environment.yml
+conda activate midi
 pip install -e .
 ```
 
 # Usage
-Run `scripts/write_midi.py` (optional: convert to jupyter notebook with jupytext)
+Run `scripts/write_midi.py` cell by cell (optional: convert to jupyter notebook with jupytext)
 
 # movie creation
 
