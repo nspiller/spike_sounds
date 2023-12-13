@@ -35,8 +35,8 @@ def generate_note_sequence(root_note, semitone_sequence, number):
     return notes
 
 def times2midi(l_times,
-               ticks_per_beat=4800, bpm=120, time_signature=(4, 4),
-               velocity=64, root_note=60, note_duration=.1, 
+               ticks_per_beat=4800, bpm=120, time_signature=(4, 4), program=0, channel=0,
+               velocity=64, root_note=60, note_duration=.1,
                semitone_sequence=[0, 4, 7],
                merge_tracks=True, path=''):
     
@@ -50,13 +50,15 @@ def times2midi(l_times,
     l_track = []
     for note, times in zip(notes, l_times):
         track = mido.MidiTrack()
+        track.append(mido.Message('program_change', program=program, time=0, channel=channel))
+
 
         ticks = [ time2tick(i) for i in times ] # list of time events in ticks
         delta_ticks = get_deltas(ticks, duration)
 
         for dt_on, dt_off in zip(delta_ticks[::2], delta_ticks[1::2]):
-            track.append(mido.Message('note_on',  note=note, velocity=velocity, time=dt_on,  channel=0))
-            track.append(mido.Message('note_off', note=note, velocity=velocity, time=dt_off, channel=0))
+            track.append(mido.Message('note_on',  note=note, velocity=velocity, time=dt_on,  channel=channel))
+            track.append(mido.Message('note_off', note=note, velocity=velocity, time=dt_off, channel=channel))
         
         l_track.append(track)
 
