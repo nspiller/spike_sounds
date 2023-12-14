@@ -35,6 +35,8 @@ from src import data_handling, midi_handling, visualize
 # load example data
 data = data_handling.read_data('../data/example.pickle')
 
+data = {k: v for k, v in data.items()}
+
 # plot
 plot_params = {
     'figsize' : (10, 5),
@@ -43,32 +45,35 @@ plot_params = {
 }
 visualize.plot_data(data, vline_keys=['lick', 'onset'], **plot_params)
 
-# %%
-# convert dictionary to list of lists of time events (order is reflected in MIDI file)
-print('Data data to be written to MIDI file:')
-print(*data.keys())
-l_time_events = [ *data.values() ]
-
 # %% [markdown]
 # # create MIDI file
 
 # %%
-# write to file
-midi_handling.times2midi(
-    l_time_events,                      # actual data
-    bpm=120, ticks_per_beat=4800,       # time resolution settings
-    note_duration=0.1,                  # in seconds
-    root_note=36,                       # 60 is C4
-    semitone_sequence=[0, 4, 7],        # 0-4-7 is a major chord, octaves (+12) are added automatically
-                                        # note: max note is 127
-    merge_tracks=True,                  # merge if you want to use multiple instruments
-    path='../data/example.mid'          # if not set, return mido.MidiFile object
-    )
+# spikes, onsets, and licks are send on separate midi channels
+onsets = [data["onset"]]
+licks = [data["lick"]]
+spikes = [v for k, v in data.items() if k.startswith("unit")][:1]
+
+tracks0 = midi_handling.generate_tracks(
+    spikes, channel=0, root_note=36, program=25, velocity=64
+)
+tracks1 = midi_handling.generate_tracks(
+    onsets, channel=1, root_note=48, program=47, velocity=127, note_duration=1
+)
+tracks2 = midi_handling.generate_tracks(
+    licks, channel=2, root_note=96, program=46, velocity=127, note_duration=1
+)
+
+all_tracks = tracks0 + tracks1 + tracks2
+midi_handling.tracks2midi(all_tracks, path="../data/example.mid")
 
 # %% [markdown]
 # # create video file
 
 # %%
-visualize.generate_movie(l_time_events, time_interval=(0, 20), time_resolution=.03, plot_params=plot_params, path_movie='../data/example.mp4')
+visualize.generate_movie(spikes + onsets + licks, time_resolution=.03, plot_params=plot_params, path_movie='../data/example.mp4')
+
+# %%
+fig = visualize.plot_frame(spikes + onsets + licks)
 
 # %%
