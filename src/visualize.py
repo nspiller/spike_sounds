@@ -37,24 +37,27 @@ def plot_data(data, vline_keys=[], linewidth=.5, linelengths=1, figsize=(10, 5),
 
 
 
-def plot_frame(l_time_events, time_interval, time_point, linewidth=.5, linelengths=1, figsize=(10, 5),):
+def plot_frame(l_time_events, time_point=None, hide_axes=False, xlims=(None, None), linewidth=.5, linelengths=1, figsize=(10, 5),):
 
     fig, ax = plt.subplots(figsize=figsize)
 
     for i, time_events in enumerate(l_time_events):
 
-        mask = time_events < time_point
-        ax.eventplot(time_events[mask], lineoffsets=i, linewidth=linewidth, linelengths=linelengths, colors=f'C{i}')
-    
-    ax.axvline(time_point, color='gray')
+        if time_point is not None:
+            mask = time_events < time_point
+            time_events = time_events[mask]
+            ax.axvline(time_point, color='red', zorder=99)
 
-    ax.set_xlim(time_interval)
+        ax.eventplot(time_events, lineoffsets=i, linewidth=linewidth, linelengths=linelengths, colors=f'C{i}')
+    
+    ax.set_xlim(xlims)
     ax.set_ylim(-.5, len(l_time_events) - .5)
 
-    ax.set_xticklabels([])
-    ax.set_xticks([])
-    ax.set_yticklabels([])
-    ax.set_yticks([])
+    if hide_axes:
+        ax.set_xticklabels([])
+        ax.set_xticks([])
+        ax.set_yticklabels([])
+        ax.set_yticks([])
 
     return fig
 
@@ -68,13 +71,15 @@ def convert_figure_to_image(fig):
     return frame
  
     
-def generate_movie(l_time_events, time_interval, time_resolution, plot_params, path_movie):
+def generate_movie(l_time_events, time_resolution, plot_params, path_movie):
 
-    time_points = np.arange(*time_interval, time_resolution)
+    
+    t_max = np.concatenate(l_time_events).max()
+    time_points = np.arange(0, t_max, time_resolution)
 
     frames = []
     for time_point in time_points:
-        fig = plot_frame(l_time_events, time_interval, time_point, **plot_params)
+        fig = plot_frame(l_time_events, time_point, xlims=(0, t_max), **plot_params)
         frames.append(convert_figure_to_image(fig))
         plt.close(fig)
 
