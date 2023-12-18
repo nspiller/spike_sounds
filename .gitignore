@@ -2,3 +2,5 @@
 __pycache__
 data/matlab/
 data/testing
+*.wav
+*.mp4
