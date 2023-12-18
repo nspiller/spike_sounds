@@ -3,86 +3,122 @@ import numpy as np
 import io
 import imageio
 
-def plot_data(data, vline_keys=[], linewidth=.5, linelengths=1, figsize=(10, 5), save_path=''):
+from joblib import Parallel, delayed, parallel_backend
 
-
+def plot_data(
+    data,
+    key_vlines=[],
+    t_cutoff=None,
+    xlims=(None, None),
+    xlabel="time [s]",
+    linewidth=0.5,
+    linelengths=1,
+    figsize=(10, 5),
+    palette="tab10",
+    palette_vlines="Pastel1",
+):
     fig, ax = plt.subplots(figsize=figsize)
 
-    lineoffset = 0
-    vline_color_id = 1
-    for key, time_events in data.items():
+    cmap = plt.get_cmap(palette)
+    cmap_vlines = plt.get_cmap(palette_vlines)
 
-        if key in vline_keys:
-            for t in time_events:
-                ax.axvline(t, color=f'C{vline_color_id}', label=key)
-            vline_color_id += 1
+    i, j = 0, 0
+    ylabels = []
 
-        else:
-            ax.eventplot(time_events, lineoffsets=lineoffset, linewidth=linewidth, linelengths=linelengths, color='C0')
-            lineoffset += 1
-
-    # legend
-    h, l = ax.get_legend_handles_labels()
-    if h:
-        ax.legend((h[0], h[-1]), (l[0], l[-1]), loc='upper left', bbox_to_anchor=(1., 1))
-
-    ax.set_xlabel('time')
-    ax.set_yticklabels([])
-    ax.set_yticks(range(lineoffset))
-
-    # optional: save to file and close
-    if save_path:
-        fig.savefig(save_path)
-        plt.close(fig)
-
-
-
-def plot_frame(l_time_events, time_point=None, hide_axes=False, xlims=(None, None), linewidth=.5, linelengths=1, figsize=(10, 5),):
-
-    fig, ax = plt.subplots(figsize=figsize)
-
-    for i, time_events in enumerate(l_time_events):
-
-        if time_point is not None:
-            mask = time_events < time_point
+    for name in data:
+        time_events = data[name]
+        if t_cutoff is not None:
+            mask = time_events < t_cutoff
             time_events = time_events[mask]
-            ax.axvline(time_point, color='red', zorder=99)
 
-        ax.eventplot(time_events, lineoffsets=i, linewidth=linewidth, linelengths=linelengths, colors=f'C{i}')
-    
+        if name in key_vlines:
+            label = name
+            for t in time_events:
+                ax.axvline(
+                    t, color=cmap_vlines(j % cmap_vlines.N), label=label, zorder=99
+                )
+                label = None
+            j += 1
+        else:
+            ax.eventplot(
+                time_events,
+                lineoffsets=i,
+                linewidth=linewidth,
+                linelengths=linelengths,
+                colors=cmap(i % cmap.N),
+            )
+            i += 1
+            ylabels.append(name)
+
     ax.set_xlim(xlims)
-    ax.set_ylim(-.5, len(l_time_events) - .5)
+    ax.set_xlabel(xlabel)
+    ax.set_ylim(-0.5, len(ylabels) - 0.5)
 
-    if hide_axes:
-        ax.set_xticklabels([])
-        ax.set_xticks([])
-        ax.set_yticklabels([])
-        ax.set_yticks([])
+    ax.set_yticks(range(len(ylabels)))
+    ax.set_yticklabels(ylabels)
+    if j:
+        ax.legend(loc="upper right")
 
-    return fig
+    return fig, ax
 
-def convert_figure_to_image(fig):
 
+def hide_axes_and_legend(ax):
+    """Remove ticks and labels from axes for cleaner plots.
+
+    Parameters
+    ----------
+    ax : axes object
+        Axes with ticks and labels to be removed.
+    """
+
+    ax.set_xticklabels([])
+    ax.set_xticks([])
+    ax.set_yticklabels([])
+    ax.set_yticks([])
+    ax.set_xlabel("")
+    ax.set_axis_off()
+
+
+def draw_time_indicator(ax, time_point, color="red"):
+    ax.axvline(time_point, color=color, zorder=99)
+
+
+def convert_figure_to_image(fig, dpi):
     buffer = io.BytesIO()
-    fig.savefig(buffer)
+    fig.savefig(buffer, dpi=dpi)
 
     frame = imageio.imread(buffer)
 
     return frame
- 
-    
-def generate_movie(l_time_events, time_resolution, plot_params, path_movie):
 
-    
-    t_max = np.concatenate(l_time_events).max()
-    time_points = np.arange(0, t_max, time_resolution)
 
-    frames = []
-    for time_point in time_points:
-        fig = plot_frame(l_time_events, time_point, xlims=(0, t_max), **plot_params)
-        frames.append(convert_figure_to_image(fig))
+def draw_frame(data, time_point, t_max, plot_params, dpi, matplotlib_style):
+    with plt.style.context(matplotlib_style):
+        fig, ax = plot_data(data, t_cutoff=time_point, xlims=(0, t_max), **plot_params)
+
+        draw_time_indicator(ax, time_point=time_point)
+        hide_axes_and_legend(ax)
+
+        frame = convert_figure_to_image(fig, dpi=dpi)
         plt.close(fig)
 
-    with imageio.get_writer(path_movie, format='FFMPEG', fps=1 / time_resolution) as writer:
+        return frame
+
+
+def generate_movie(
+    data, time_resolution, plot_params, path_movie, dpi=300, matplotlib_style="classic"
+):
+    t_max = np.concatenate([*data.values()]).max()
+    time_points = np.arange(0, t_max, time_resolution)
+
+    with parallel_backend("loky", n_jobs=-1):
+        frames = Parallel()(
+            delayed(draw_frame)(data, t, t_max, plot_params, dpi, matplotlib_style)
+            for t in time_points
+        )
+
+    with imageio.get_writer(
+        path_movie, format="FFMPEG", fps=1 / time_resolution
+    ) as writer:
         for frame in frames:
             writer.append_data(frame)

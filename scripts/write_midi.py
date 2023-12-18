@@ -35,26 +35,48 @@ from src import data_handling, midi_handling, visualize
 # load example data
 data = data_handling.read_data('../data/example.pickle')
 
-data = {k: v for k, v in data.items()}
-
 # plot
 plot_params = {
     'figsize' : (10, 5),
     'linewidth' : .5,
     'linelengths' : .9,
 }
-visualize.plot_data(data, vline_keys=['lick', 'onset'], **plot_params)
+
+fig, ax = visualize.plot_data(data, key_vlines=['lick', 'onset'], **plot_params)
 
 # %% [markdown]
-# # create MIDI file
+# # Single channel
+
+# %%
+# select data
+data_spikes = { k: v for k, v in data.items() if k.startswith("unit") }
+
+# generate and save MIDI data
+tracks = midi_handling.generate_tracks(
+    data_spikes.values(), channel=0, root_note=36, program=25, velocity=127,
+)
+midi_handling.tracks2midi(tracks, path="../data/example1.mid")
+
+# %%
+# generate movie
+visualize.generate_movie(
+    data_spikes,
+    time_resolution=0.03,
+    matplotlib_style='dark_background',
+    plot_params=plot_params,
+    path_movie="../data/example1.mp4",
+)
+
+# %% [markdown]
+# # Multiple channels
 
 # %%
 # spikes, onsets, and licks are send on separate midi channels
 onsets = [data["onset"]]
 licks = [data["lick"]]
-spikes = [v for k, v in data.items() if k.startswith("unit")][:1]
+spikes = [v for k, v in data.items() if k.startswith("unit")]
 
-tracks0 = midi_handling.generate_tracks(
+tracks0 = midi_handling.generate_tracks(# play spikes on channel 0 with program 25 ()
     spikes, channel=0, root_note=36, program=25, velocity=64
 )
 tracks1 = midi_handling.generate_tracks(
@@ -65,15 +87,13 @@ tracks2 = midi_handling.generate_tracks(
 )
 
 all_tracks = tracks0 + tracks1 + tracks2
-midi_handling.tracks2midi(all_tracks, path="../data/example.mid")
-
-# %% [markdown]
-# # create video file
+midi_handling.tracks2midi(all_tracks, path="../data/example2.mid")
 
 # %%
-visualize.generate_movie(spikes + onsets + licks, time_resolution=.03, plot_params=plot_params, path_movie='../data/example.mp4')
-
-# %%
-fig = visualize.plot_frame(spikes + onsets + licks)
-
-# %%
+# generate movie
+visualize.generate_movie(
+    spikes + onsets + licks,
+    time_resolution=0.03,
+    plot_params=plot_params,
+    path_movie="../data/example2.mp4",
+)
