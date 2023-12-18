@@ -1,6 +1,27 @@
 !!! work in progress !!!
 
+# Spike sounds
+Convert spikes to MIDI signals
+
+This project is a workflow to convert time events,
+such as spike times from electrophysiology recordings,
+to MIDI signals, which are a widely used standard used in music synthesis.
+
+The output is a MIDI file, that can be used to drive a, for example, a synthesizer
+or a virtual instrument, to create an audio file.
+In addition, a video file is generated to visualize the time events,
+which can be merged with the audio file.
+
+<!-- TODO instert link to example -->
+
 # Installation
+The code is designed to be installed via a conda environment, 
+so you need 
+[miniforge](https://github.com/conda-forge/miniforge) or
+[anaconda](https://www.anaconda.com/download).
+If [git](https://git-scm.com/) is not available on your system,
+you can also manually download this repository.
+
 ```
 git clone https://github.com/nspiller/spike_sounds
 cd spike_sounds
@@ -9,18 +30,18 @@ conda activate midi
 pip install -e .
 ```
 
-# Usage
-Run `scripts/write_midi.py` cell by cell (optional: convert to jupyter notebook with jupytext)
-
-
-# Convert spike times to MIDI
-This project is deisgned to convert spikes recorded in
-neuroscience experiments to sounds.
-However, the code works for any set of time events.
+# How to use
+An example workflow is given in `scripts/write_midi.py`.
+This python script file can be run cell-by-cell with a suitable interpreter.
+It was created with 
+[jupytext](https://jupytext.readthedocs.io/en/latest/),
+which allows you to convert between the script file and the jupyter notebook. 
+I can recommend [this vscode extension](https://github.com/congyiwu/vscode-jupytext)
+for the conversion.
 
 
 ## File format
-The output is a MIDI file.
+The output is a MIDI file generated with the python library [mido](https://mido.readthedocs.io/).
 Those files can be read by suitable software,
 which will play a sound whenever a spike occurs. 
 For example, [this free, online MIDI player](https://signal.vercel.app/) 
