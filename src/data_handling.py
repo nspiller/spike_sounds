@@ -14,7 +14,7 @@ def read_data(path):
     return dictionary
 
 
-def load_matlab(p_mat, time_interval=(0, 10), rate_range=(0, None)):
+def load_matlab(p_mat, time_interval=(0, 10), rate_range=(0, None), sort_rate=True):
     # unpack thresholds
     t_min, t_max = time_interval
     dt = t_max - t_min  # duration
@@ -44,11 +44,22 @@ def load_matlab(p_mat, time_interval=(0, 10), rate_range=(0, None)):
     data["lick"] = t_lick - t_min
 
     # iterate over units
+    units, spikes = [], []
     for i, u in enumerate(mat["unit"]):
         t_spk = u["SpikeTimesInSec"]
         m = (t_spk > t_min) & (t_spk < t_max)
         t_spk = t_spk[m]
         if n_min < len(t_spk) < n_max:
-            data[f"unit_{i+1}"] = t_spk - t_min  # units start with 1
+            units.append(f"unit_{i+1}") # units start with 1
+            spikes.append(t_spk - t_min)
+
+    if sort_rate: # sort units by firing rate
+        n_spikes = [len(s) for s in spikes]
+        idx = np.argsort(n_spikes)[::-1]
+        units = [units[i] for i in idx]
+        spikes = [spikes[i] for i in idx]
+
+    for u, s in zip(units, spikes):
+        data[u] = s
 
     return data
