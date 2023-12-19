@@ -38,22 +38,6 @@ data = {
 # visualization as raster plot
 fig, ax = visualize.plot_data(data)
 
-# %%
-import numpy as np
-# data structure with some data
-data = {
-    "C4": np.arange(0, 1, .02),
-    "E4": [0.250, 1.125],
-    "G4": [0.375, 1.000],
-    "C5": [0.500, 0.875],
-}
-
-
-tracks = midi_handling.generate_tracks(
-    data.values(), channel=0, root_note=36, program=25, velocity=127,
-)
-midi_handling.tracks2midi(tracks, path="../data/synth.mid")
-
 # %% [markdown]
 # ## Experimental spike data
 # This data set contains spiking activity for multiple neurons,
@@ -110,13 +94,13 @@ spikes = [v for k, v in data.items() if k.startswith("unit")]
 
 # generate separate tracks
 tracks0 = midi_handling.generate_tracks(
-    spikes, channel=0, root_note=36, program=25, velocity=64
+    spikes, channel=0, root_note=36, program=46, velocity=64
 )
 tracks1 = midi_handling.generate_tracks(
     onsets, channel=1, root_note=48, program=47, velocity=127, note_duration=1
 )
 tracks2 = midi_handling.generate_tracks(
-    licks, channel=2, root_note=96, program=46, velocity=127, note_duration=1
+    licks, channel=2, root_note=72, program=68, velocity=127, note_duration=.750
 )
 
 # combine tracks and write MIDI file
