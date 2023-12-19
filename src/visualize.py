@@ -41,9 +41,9 @@ def plot_data(
                     ax.axvline(
                         t, color=cmap_vlines(j % cmap_vlines.N), label=label, zorder=99
                     )
-                    if label is not None:
-                        j += 1
-                        label = None
+                    label = None
+                if np.any(time_events):
+                    j += 1
                 
             else:
                 ax.eventplot(
