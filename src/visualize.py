@@ -112,6 +112,7 @@ def draw_frame(data, time_point, t_max, plot_params, dpi, key_vlines):
 
     frame = convert_figure_to_image(fig, dpi=dpi)
     plt.close(fig)
+    del fig
 
     return frame
 
